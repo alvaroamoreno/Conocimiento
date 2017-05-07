@@ -39,8 +39,14 @@
 
 ;******************************************* ARTISTA: Francisco de Goya *******************************************
 
-(defrule p-oscuridad
-   (goya)
+(defrule p-oscuridad      ;A esta pregunta se puede llegar de distinta forma, a través de Francisco de Goya y Diego Velázquez
+   (or
+     (goya)
+     (and
+       (color-sobre-dibujo)
+       (velazquez)
+       (ausencia-mitologia)
+       (obra-genero)))
 =>
    (printout t "Se trata de una obra oscura, de gama de colores triste?" crlf)
    (assert (respuesta2(read))))
@@ -55,13 +61,22 @@
        ?respuesta2 <- (respuesta2 ?respuesta2-read&no)
     =>
        (retract ?respuesta2)
-       (assert(ausencia-oscura)))
+       (assert(ausencia-oscuridad)))
 
-(defrule p-tematica-guerra
+(defrule p-tematica-guerra      ;Esta regla es usada en ambos artistas (Goya y Velázquez), dada la semejanza de la pregunta.
    (goya)
    (obra-oscura)
 =>
-   (printout t "Representa una tematica de guerra (Guerra de la Independencia)?" crlf)
+   (printout t "Representa una tematica belica y escena de guerra?" crlf)
+   (assert (respuesta3(read))))
+
+(defrule p-tematica-guerra-velazquez
+   (color-sobre-dibujo)
+   (velazquez)
+   (ausencia-mitologia)
+   (ausencia-genero)
+=>
+   (printout t "Representa una tematica belica y escena de guerra?" crlf)
    (assert (respuesta3(read))))
 
     (defrule r-tematica-guerra
@@ -78,7 +93,7 @@
 
 (defrule p-escena-cotidiana
   (goya)
-  (ausencia-oscura)
+  (ausencia-oscuridad)
 =>
   (printout t "Describe una situacion cotidiana o de diversion de la nobleza de la epoca?" crlf)
   (assert (respuesta4(read))))
@@ -97,7 +112,7 @@
 
 (defrule p-nobleza-realeza
   (goya)
-  (ausencia-oscura)
+  (ausencia-oscuridad)
   (ausencia-cotidiana)
 =>
   (printout t "Las personas que aparecen en el cuadro pertenecen a la nobleza o a la monarquia?" crlf)
@@ -269,44 +284,6 @@
 =>
   (assert(ausencia-genero)))
 
-(defrule p-gama-terrosa
-  (color-sobre-dibujo)
-  (velazquez)
-  (ausencia-mitologia)
-  (obra-genero)
-=>
-  (printout t "La gama cromatica es oscura y de colores terrosos?" crlf)
-  (assert(respuesta14(read))))
-
-    (defrule r-oscura
-      ?respuesta14 <- (respuesta14 ?respuesta14-read&si)
-    =>
-      (assert(gama-oscura)))
-
-    (defrule r-costumbrista
-      ?respuesta14 <- (respuesta14 ?respuesta14-read&no)
-    =>
-      (assert(ausencia-oscuridad)))
-
-(defrule p-triunfo-monarquia
-  (color-sobre-dibujo)
-  (velazquez)
-  (ausencia-mitologia)
-  (ausencia-genero)
-=>
-  (printout t "Trata temas como la guerra y la victoria de la monarquia?" crlf)
-  (assert(respuesta15(read))))
-
-    (defrule r-guerra
-      ?respuesta15 <- (respuesta15 ?respuesta15-read&si)
-    =>
-      (assert(guerra)))
-
-    (defrule r-ausencia-guerra
-      ?respuesta15 <- (respuesta15 ?respuesta15-read&no)
-    =>
-      (assert(ausencia-guerra)))
-
 (defrule p-tipo-retratos
   (color-sobre-dibujo)
   (velazquez)
@@ -337,7 +314,7 @@
     =>
       (assert(enanos)))
 
-    (defrule r-monarquia
+    (defrule r-monarquia-velazquez
       ?respuesta16 <- (respuesta16 ?respuesta16-read&familia real)
     =>
       (assert(monarquia)))
@@ -360,14 +337,14 @@
 
 (defrule goya-primeros-encargos
   (goya)
-  (ausencia-oscura)
+  (ausencia-oscuridad)
   (escena-cotidiana)
 =>
   (printout t "Se trata de los primeros encargos." crlf))
 
 (defrule goya-retratistico
   (goya)
-  (ausencia-oscura)
+  (ausencia-oscuridad)
   (ausencia-cotidiana)
   (retrato-nobleza)
 =>
@@ -375,7 +352,7 @@
 
 (defrule goya-pintor-camara
   (goya)
-  (ausencia-oscura)
+  (ausencia-oscuridad)
   (ausencia-cotidiana)
   (retrato-monarquia)
 =>
@@ -432,7 +409,7 @@
   (velazquez)
   (ausencia-mitologia)
   (obra-genero)
-  (gama-oscura)
+  (obra-oscura)
 =>
   (printout t "Etapa sevillana." crlf))
 
@@ -458,19 +435,38 @@
 (defrule segunda-madrileña
   (color-sobre-dibujo)
   (velazquez)
-  (ausencia-mitologia|mitologia)
-  (ausencia-genero|ausencia-mundanos)
-  (guerra|ausencia-influencia-antigua&rufianes)
+  (or
+    (and (ausencia-mitologia)
+         (ausencia-genero)
+         (or
+           (tematica-guerra)
+           (and
+              (ausencia-guerra)
+              (or
+                (ecueste)
+                (bufones)
+                (enanos)))))
+    (and (mitologia)
+         (ausencia-mundanos)
+         (ausencia-influencia-antigua)
+         (rufianes)))
 =>
   (printout t "Segunda etapa madriñela." crlf))
 
 (defrule segundo-viaje-italia
   (color-sobre-dibujo)
   (velazquez)
-  (ausencia-mitologia|mitologia)
-  (ausencia-genero|ausencia-mundanos)
-  (ausencia-guerra|ausencia-influencia-antigua)
-  (vaticano|ausencia-rufianes)
+  (or
+    (and (ausencia-mitologia)
+         (ausencia-genero)
+         (ausencia-guerra)
+         (vaticano))
+    (and (color-sobre-dibujo)
+         (velazquez)
+         (mitologia)
+         (ausencia-mundanos)
+         (ausencia-influencia-antigua)
+         (ausencia-rufianes)))
 =>
   (printout t "Segundo viaje a Italia." crlf))
 
@@ -478,7 +474,13 @@
   (color-sobre-dibujo)
   (velazquez)
   (ausencia-mitologia)
-  (obra-genero)
-  (ausencia-oscuridad)
+  (or
+    (and
+      (obra-genero)
+      (ausencia-oscuridad))
+    (and
+      (ausencia-genero)
+      (ausencia-guerra)
+      (monarquia)))
 =>
   (printout t "Tercera etapa madrileña." crlf))
